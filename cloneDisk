@@ -17,6 +17,10 @@ if [ "x$DISKDEV" == "x" ]; then
     exit 1;
     fi
 
+if [ "x$2" != "x" ]; then
+    echo Usage: $0 deviceFile
+    exit 1;
+fi
 
 rm -rf BOOT.tar.bz2 ROOT.tar.bz2 sha1sums tmproot
 

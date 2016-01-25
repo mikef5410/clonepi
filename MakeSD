@@ -17,6 +17,9 @@ if [ "x$HOSTNAME" == "x" ]; then
    fi
    
 
+dd if=/dev/zero of=$DEV bs=1024k count=10
+sync
+
 #Partition ...
 # Units is SECTORS. 200MB = 409600
 # 200MB FAT32 Boot
