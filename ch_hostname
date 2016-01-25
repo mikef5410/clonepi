@@ -1,0 +1,16 @@
+#!/bin/bash
+#
+
+echo "Don't use me"
+exit 1
+
+IMG=piImg.raw
+HOSTNAME=$1
+
+qemu-nbd -f raw -c /dev/nbd0 $IMG
+fsck -f -y /dev/nbd0p2
+mount /dev/nbd0p2 /media/mnt
+echo $HOSTNAME > /media/mnt/etc/hostname
+rm -f /media/mnt/etc/ssh/*_key*
+umount /media/mnt
+qemu-nbd -d /dev/nbd0

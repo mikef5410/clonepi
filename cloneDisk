@@ -1,0 +1,69 @@
+#!/bin/bash
+
+DISKDEV=$1
+
+HERE=`pwd`
+
+function finish {
+    umount /media/mnt
+    rm -f exclude.txt
+    rm -rf tmproot
+}
+
+trap finish EXIT
+
+if [ "x$DISKDEV" == "x" ]; then
+    echo Usage: $0 deviceFile
+    exit 1;
+    fi
+
+
+rm -rf BOOT.tar.bz2 ROOT.tar.bz2 sha1sums tmproot
+
+
+rm -f exclude.txt
+cat >exclude.txt <<EOF
+etc/ssh/*_key* 
+etc/ssh/moduli
+var/cfengine/ppkeys/*
+var/cfengine/inputs/*
+var/cfengine/masterfiles/*
+var/cfengine/outputs/*
+var/cfengine/reports/*
+var/cfengine/state/*
+var/cfengine/policy_server.dat
+var/cfengine/*.pid
+var/cfengine/randseed
+var/cfengine/*.log
+root/.cpan*
+var/log/*
+tmp/*
+var/tmp/*
+EOF
+
+
+
+echo Boot partition ...
+mount ${DISKDEV}p1 /media/mnt
+time tar -C /media/mnt -cjf BOOT.tar.bz2 .
+umount /media/mnt
+
+echo Root partition ...
+mount ${DISKDEV}p2 /media/mnt
+mkdir tmproot
+TMPROOT=`pwd`/tmproot
+EXCLUDE=`pwd`/exclude.txt
+time rsync -a --exclude-from $EXCLUDE /media/mnt/ $TMPROOT
+umount /media/mnt
+
+#Now get rid of our personalizations ...
+echo Editing out personality ...
+
+echo edit ...
+echo NONAME > ./tmproot/etc/hostname
+
+echo re-pack ...
+time tar -C tmproot -cvjf ROOT.tar.bz2 .
+
+echo computing sums ...
+sha1sum BOOT.tar.bz2 ROOT.tar.bz2 MakeSD > sha1sums

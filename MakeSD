@@ -1,0 +1,51 @@
+#!/bin/bash
+#
+
+set -x
+
+DEV=$1
+HOSTNAME=$2
+
+if [ ! -w $DEV ]; then
+   echo usage: $0 deviceFile hostname
+   exit 1;
+   fi
+
+if [ "x$HOSTNAME" == "x" ]; then
+   echo usage: $0 deviceFile hostname
+   exit 1;
+   fi
+   
+
+#Partition ...
+# Units is SECTORS. 200MB = 409600
+# 200MB FAT32 Boot
+# Rest Root
+#
+
+sfdisk $DEV   << EOF
+,409600,c,*
+;
+EOF
+
+
+#
+# Now the Boot partition
+#
+mkfs.vfat -F32 -n BOOT ${DEV}p1
+mount ${DEV}p1 /media/mnt
+tar -C /media/mnt -xvf BOOT.tar.bz2
+sync
+umount /media/mnt
+
+
+#Now Root partition
+mkfs.ext4 -L ROOT ${DEV}p2
+mount ${DEV}p2 /media/mnt
+tar -C /media/mnt -xvf ROOT.tar.bz2
+echo $HOSTNAME > /media/mnt/etc/hostname
+rm -f /media/mnt/etc/ssh/*_key*
+rm -f /media/mnt/var/cfengine/ppkeys/*
+sync
+umount /media/mnt
+
