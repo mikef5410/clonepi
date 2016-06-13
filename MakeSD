@@ -16,6 +16,15 @@ if [ "x$HOSTNAME" == "x" ]; then
    exit 1;
    fi
    
+if [[ $DEV == *"mmcblk"* ]]; then
+    PART1=${DEV}p1
+    PART2=${DEV}p2
+else
+    PART1=${DEV}1
+    PART2=${DEV}2
+fi
+
+
 
 dd if=/dev/zero of=$DEV bs=1024k count=10
 sync
@@ -42,16 +51,16 @@ if ( $? -ne 0 ); then
 #
 # Now the Boot partition
 #
-mkfs.vfat -F32 -n BOOT ${DEV}p1 || exit
-mount ${DEV}p1 /media/mnt || exit
+mkfs.vfat -F32 -n BOOT ${PART1} || exit
+mount ${PART1} /media/mnt || exit
 tar -C /media/mnt -xvf BOOT.tar.bz2
 sync
 umount /media/mnt
 
 
 #Now Root partition
-mkfs.ext4 -L ROOT ${DEV}p2 || exit
-mount ${DEV}p2 /media/mnt || exit
+mkfs.ext4 -L ROOT ${PART2} || exit
+mount ${PART2} /media/mnt || exit
 tar -C /media/mnt -xvf ROOT.tar.bz2
 echo $HOSTNAME > /media/mnt/etc/hostname
 rm -f /media/mnt/etc/ssh/*_key*
