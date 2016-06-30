@@ -22,6 +22,17 @@ if [ "x$2" != "x" ]; then
     exit 1;
 fi
 
+   
+if [[ $DISKDEV == *"mmcblk"* ]]; then
+    PART1=${DISKDEV}p1
+    PART2=${DISKDEV}p2
+else
+    PART1=${DISKDEV}1
+    PART2=${DISKDEV}2
+fi
+
+
+
 rm -rf BOOT.tar.bz2 ROOT.tar.bz2 sha1sums tmproot
 
 
@@ -48,12 +59,12 @@ EOF
 
 
 echo Boot partition ...
-mount ${DISKDEV}p1 /media/mnt
+mount ${PART1} /media/mnt
 time tar -C /media/mnt -cjf BOOT.tar.bz2 .
 umount /media/mnt
 
 echo Root partition ...
-mount ${DISKDEV}p2 /media/mnt
+mount ${PART2} /media/mnt
 mkdir tmproot
 TMPROOT=`pwd`/tmproot
 EXCLUDE=`pwd`/exclude.txt
