@@ -59,8 +59,8 @@ umount /media/mnt
 
 
 #Now Root partition
-mkfs.ext4 -L ROOT ${PART2} || exit
-mount ${PART2} /media/mnt || exit
+mkfs.f2fs -l ROOT ${PART2} || exit
+mount -t f2fs ${PART2} /media/mnt || exit
 tar -C /media/mnt -xvf ROOT.tar.bz2
 echo $HOSTNAME > /media/mnt/etc/hostname
 rm -f /media/mnt/etc/ssh/*_key*
